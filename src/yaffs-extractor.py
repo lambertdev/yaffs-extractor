@@ -68,7 +68,7 @@ class YAFFSConfig(object):
         self.endianess = YAFFS.LITTLE_ENDIAN
         self.page_size = YAFFS.DEFAULT_PAGE_SIZE
         self.spare_size = YAFFS.DEFAULT_SPARE_SIZE
-		self.block_size =  YAFFS.DEFAULT_BLOCK_SIZE
+        self.block_size =  YAFFS.DEFAULT_BLOCK_SIZE
         self.ecclayout = True
         self.preserve_mode = True
         self.preserve_owner = False
@@ -210,7 +210,7 @@ class YAFFS(object):
     # These are the default values used by mkyaffs
     DEFAULT_PAGE_SIZE           = 2048
     DEFAULT_SPARE_SIZE          = 64
-	DEFAULT_BLOCK_SIZE 			= 0
+    DEFAULT_BLOCK_SIZE 			= 0
     
     # These assume non-unicode YAFFS name lengths
     # NOTE: In the YAFFS code YAFFS_MAX_NAME_LENGTH is #defined as 255.
@@ -228,12 +228,12 @@ class YAFFS(object):
     YAFFS_OBJECT_TYPE_HARDLINK  = 4
     YAFFS_OBJECT_TYPE_SPECIAL   = 5
 	
-	YAFFS_OBJECT_ID_ROOT		= 1
-	YAFFS_OBJECT_ID_LOSTNFOUND	= 2
-	YAFFS_OBJECT_ID_UNLINKED	= 3
-	YAFFS_OBJECT_ID_DELETED		= 4
-
-	YAFFS_CHKPT_SEQ			= 0x21
+    YAFFS_OBJECT_ID_ROOT		= 1
+    YAFFS_OBJECT_ID_LOSTNFOUND	= 2
+    YAFFS_OBJECT_ID_UNLINKED	= 3
+    YAFFS_OBJECT_ID_DELETED		= 4
+    
+    YAFFS_CHKPT_SEQ			= 0x21
     # These must be overidden with valid data by any subclass wishing
     # to use the read_long, read_short, read_next or read_block methods.
     #
@@ -375,11 +375,10 @@ class YAFFSSpare(YAFFS):
         # bytes before the chunk ID. Possibly an unused CRC?
         #if not self.config.ecclayout:
         #    junk = self.read_next(2)
-		
-		self.seq_number = self.read_next(4)
-		self.obj_id = self.read_next(4)
+        self.seq_number = self.read_next(4)
+        self.obj_id = self.read_next(4)
         self.chunk_id = self.read_next(4)
-		self.n_bytes = self.read_next(4)
+        self.n_bytes = self.read_next(4)
 		
 
 class YAFFSEntry(YAFFS):
@@ -481,13 +480,13 @@ class YAFFSExtractor(YAFFS):
         config - An instance of YAFFSConfig.
         '''
         self.sum_n_used = 0
-		self.sum_bad_block = 0
-		self.sum_chkpt_block = 0
+        self.sum_bad_block = 0
+        self.sum_chkpt_block = 0
 		
-		self.file_paths = {}
+        self.file_paths = {}
         self.file_entries = {}
-		self.file_chunks = {} #array for chunk id
-		self.file_seq = {}
+        self.file_chunks = {} #array for chunk id
+        self.file_seq = {}
 		
         self.data = data
         self.config = config
@@ -497,29 +496,29 @@ class YAFFSExtractor(YAFFS):
         Parses the YAFFS file system, builds directory structures and stores file info / data.
         Must be called before all other methods in this class.
         '''
-		nand_chunk_id = 0
+        nand_chunk_id = 0
 
-		while self.offset < self.data_len:
-			(obj_hdr_data, obj_hdr_spare) = self.read_block()
+        while self.offset < self.data_len:
+            (obj_hdr_data, obj_hdr_spare) = self.read_block()
 			
-			spare = YAFFSSpare(obj_hdr_spare, self.config)
+            spare = YAFFSSpare(obj_hdr_spare, self.config)
 			#A starting chunk
-			if spare.seq_number = YAFFS.YAFFS_CHKPT_SEQ:
-				if self.config.block_size != YAFFS.DEFAULT_BLOCK_SIZE:
-					nand_chunk_id += self.config.block_size-1
-					self.proceed_block()
-				continue
-			elif (self.file_chunks[spare.obj_id] is None) or (self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id] is None) or (self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id]["seq"] < spare.seq_number):
+            if spare.seq_number == YAFFS.YAFFS_CHKPT_SEQ:
+                if self.config.block_size != YAFFS.DEFAULT_BLOCK_SIZE:
+                    nand_chunk_id += self.config.block_size-1
+                    self.proceed_block()
+                continue
+            elif (self.file_chunks[spare.obj_id] is None) or (self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id] is None) or (self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id]["seq"] < spare.seq_number):
 				self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id]["seq"] = spare.seq_number
 				self.file_chunks[spare.obj_id]["chunks"][spare.chunk_id]["nand_chunk_id"] = nand_chunk_id
 				if spare.obj_id == 0:
 					entry = YAFFSEntry(obj_hdr_data, obj_hdr_spare, self.config)
 					self.file_entries[spare.obj_id] = entry
 					self.file_chunks[parent_obj_id]["children"][spare.obj_id] = spare.obj_id
-			else: 
-				continue
+            else:
+                continue
 			
-			nand_chunk_id += 1;
+            nand_chunk_id += 1
 		
     def _print_entry(self, entry):
         '''
@@ -561,12 +560,12 @@ class YAFFSExtractor(YAFFS):
         if self.config.preserve_owner:
             os.chown(file_path, entry.yst_uid, entry.yst_gid)
 	
-	def fix_file_path_iter(self, obj_id):
-		for obj self.file_chunks[obj_id]["children"]:
-			self.file_paths[obj] = os.path.join(self.file_paths[obj_id], self.file_paths[obj])
-			entry = self.file_entries[obj]
+    def fix_file_path_iter(self, obj_id):
+        for obj in self.file_chunks[obj_id]["children"]:
+            self.file_paths[obj] = os.path.join(self.file_paths[obj_id], self.file_paths[obj])
+            entry = self.file_entries[obj]
             if int(entry.yaffs_obj_type) == self.YAFFS_OBJECT_TYPE_DIRECTORY:
-				self.fix_file_path(obj)
+                self.fix_file_path(obj)
 	
 	def fix_file_path(self):
 		outdir = Compat.str2bytes(outdir)
@@ -688,7 +687,7 @@ def main():
 
     page_size = None
     spare_size = None
-	block_size = None
+    block_size = None
     endianess = None
     ecclayout = None
     preserve_mode = None
@@ -722,7 +721,7 @@ def main():
         sys.stderr.write("    -d, --dir=<output directory>    Extract YAFFS files to this directory **\n")
         sys.stderr.write("    -p, --page-size=<int>           YAFFS page size [default: 2048]\n")
         sys.stderr.write("    -s, --spare-size=<int>          YAFFS spare size [default: 64]\n")
-		sys.stderr.write("    -B, --block-size=<int>          YAFFS block size(#pages per block) [default: 64]\n")
+        sys.stderr.write("    -B, --block-size=<int>          YAFFS block size(#pages per block) [default: 64]\n")
         sys.stderr.write("    -e, --endianess=<big|little>    Set input file endianess [default: little]\n")
         sys.stderr.write("    -n, --no-ecc                    Don't use the YAFFS oob scheme [default: use the oob scheme]\n")
         sys.stderr.write("    -a, --auto                      Attempt to auto detect page size, spare size, ECC, and endianess settings [default: False]\n")
@@ -756,7 +755,7 @@ def main():
             spare_size = int(arg)
         elif opt in ["-p", "--page-size"]:
             page_size = int(arg)
-		elif opt in ["-B", "--block_size"]:
+        elif opt in ["-B", "--block_size"]:
 			block_size = int(arg)
         elif opt in ["-o", "--ownership"]:
             preserve_ownership = True
